@@ -1,0 +1,7 @@
+location            = "East US"
+resource_group_name = "prod-rg"
+vnet_name           = "prod-vnet"
+subnet_name         = "prod-subnet"
+vm_name             = "prod-vm"
+admin_username      = "azureuser"
+admin_password      = "MyP@ssword123!"
