@@ -30,6 +30,14 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -var-file="dev.tfvars"
 
+  ManualApproval:
+    runs-on: ubuntu-latest
+    needs: Dev
+    environment: prod   # GitHub environment with reviewers
+    steps:
+      - name: Wait for approval
+        run: echo "Waiting for manual approval to proceed to Prod..."
+
   Prod:
     runs-on: ubuntu-latest
     environment: prod  
