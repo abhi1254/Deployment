@@ -25,6 +25,7 @@ jobs:
           resource_group_name: backendrg
           container_name: backendcontainer
           storage_account_name: backendstorge
+          file_name: dev.tfstate 
 
       - name: Terraform Plan
         run: terraform plan -var-file="dev.tfvars"
@@ -50,8 +51,12 @@ jobs:
           resource_group_name: backendrg
           container_name: backendcontainer
           storage_account_name: backendstorge
+          file_name: prod.tfstate 
 
       - name: Terraform Plan
         run: terraform plan -var-file="prod.tfvars"
+
+      - name: Terraform Apply
+        run: terraform apply -var-file="prod.tfvars"
 
     
