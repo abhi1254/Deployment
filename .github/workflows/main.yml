@@ -6,21 +6,35 @@ on:
       - main
 
 jobs:
-  deploy:
-    runs-on: self-hosted  # Windows runner
+  terraform:
+    runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout the repo
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
+      - uses: Azure/login@v2
+        with: 
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
 
-      - name: Terraform Init
-        run: terraform init -backend-config="resource_group_name=backendrg" -backend-config="storage_account_name=backendstorge" -backend-config="container_name=backendcontainer" -backend-config="key=terraform.tfstate"
-        shell: powershell
+      # Step 2: Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.7.5  # change to your version
 
+      # Step 3: Terraform Init (with backend config if needed)
+      - name: Terraform init azurerm backend
+        uses: ahmedig/terraform-azurerm-backend@v4
+        with:
+            azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+            resource_group_name: backendrg
+            container_name: backendcontainer
+            storage_account_name: backendstorge
 
-      - name: Terraform Plan (Dev)
+      # Step 4: Terraform Plan
+      - name: Terraform Plan
         run: terraform plan -var-file="dev.tfvars"
+
+      
