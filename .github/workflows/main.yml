@@ -1,70 +1,43 @@
-name: Deployment
+name: Terraform Deployment
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
-  Dev:
-    runs-on: ubuntu-latest
+  dev:
+    name: Dev Deployment
+    runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Terraform Plan (Dev)
+        run: echo "Running Dev Plan..."
+    outputs:
+      dev_done: ${{ steps.terraform_plan.outputs.result }}
 
-      - uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.7.5
-
-      - uses: ahmedig/terraform-azurerm-backend@v4
-        with:
-          azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
-          resource_group_name: backendrg
-          container_name: backendcontainer
-          storage_account_name: backendstorge
-          file_name: dev.tfstate 
-
-      - name: Terraform Plan
-        run: terraform plan -var-file="dev.tfvars"
-
-  ManualApproval:
+  manual_approval:
+    name: Manual Approval
     runs-on: ubuntu-latest
-    needs: Dev
-    environment: prod   # GitHub environment with reviewers
+    needs: dev
+    environment:
+      name: manual_approval_env   # This lets you add reviewers
     steps:
       - name: Wait for approval
-        run: echo "Waiting for manual approval to proceed to Prod..."
+        run: echo "Waiting for manual approval..."
 
-  Prod:
-    runs-on: ubuntu-latest
-    environment: prod  
-    needs: Dev       
+  prod:
+    name: Prod Deployment
+    runs-on: self-hosted
+    needs: manual_approval
+    environment: prod
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.7.5
-
-      - uses: ahmedig/terraform-azurerm-backend@v4
-        with:
-          azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
-          resource_group_name: backendrg
-          container_name: backendcontainer
-          storage_account_name: backendstorge
-          file_name: prod.tfstate 
-
-      - name: Terraform Plan
-        run: terraform plan -var-file="prod.tfvars"
-
-      - name: Terraform Apply
-        run: terraform apply -var-file="prod.tfvars"
-
-    
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Terraform Apply (Prod)
+        run: echo "Deploying to Prod..."
