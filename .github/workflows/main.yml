@@ -20,13 +20,10 @@ jobs:
       - name: Terraform init azurerm backend
         uses: ahmedig/terraform-azurerm-backend@v4
         with:
-          azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
-          resource_group_name: backendrg
-          container_name: backendcontainer
-          storage_account_name: backendstorge
-
+            azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+            resource_group_name: backendrg
+            container_name: backendcontainer
+            storage_account_name: backendstorge
       - name: Terraform Plan (Dev)
-        uses: dflook/terraform-plan@v1.29.1
-        with:
-          path: "."
-          var-file: "dev.tfvars"
+        run: terraform plan -var-file="dev.tfvars"
+
