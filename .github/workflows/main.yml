@@ -46,7 +46,7 @@ jobs:
   Prod:
     runs-on: ubuntu-latest
     environment: prod  
-    needs: Dev       
+    needs: manual_approval     
     steps:
       - uses: actions/checkout@v4
 
