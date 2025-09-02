@@ -1,0 +1,30 @@
+name: Deployment
+on:
+ push:
+  branch:
+   -main
+   
+name: Azure Login
+  uses: Azure/login@v2
+  with:
+   cred ${{ secrets.AZURE_CREDENTIALS }}
+
+- name: Terraform init azurerm backend
+  uses: ahmedig/terraform-azurerm-backend@v4
+  with:
+    azure_credentials: {{ secrets.AZURE_CREDENTIALS }}
+    resource_group_name: backendrg
+    container_name: backendcontainer
+    storage_account_name: backendstorge
+
+- name: terraform-plan
+  uses: dflook/terraform-plan@v1.29.1
+  with:
+    path: "."    
+    var-file: "dev.tfvars"  
+
+    
+
+   
+   
+ 
