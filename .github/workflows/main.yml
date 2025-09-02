@@ -6,38 +6,52 @@ on:
       - main
 
 jobs:
-  terraform:
+  Dev:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the repo
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - uses: Azure/login@v2
-        with: 
+      - uses: azure/login@v2
+        with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
 
-      # Step 2: Setup Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.7.5  # change to your version
+          terraform_version: 1.7.5
 
-      # Step 3: Terraform Init (with backend config if needed)
-      - name: Terraform init azurerm backend
-        uses: ahmedig/terraform-azurerm-backend@v4
+      - uses: ahmedig/terraform-azurerm-backend@v4
         with:
-            azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
-            resource_group_name: backendrg
-            container_name: backendcontainer
-            storage_account_name: backendstorge
+          azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          resource_group_name: backendrg
+          container_name: backendcontainer
+          storage_account_name: backendstorge
 
-      # Step 4: Terraform Plan
       - name: Terraform Plan
         run: terraform plan -var-file="dev.tfvars"
 
-      - name: Terraform Apply
-        run: terraform apply -var-file="dev.tfvars"
+  Prod:
+    runs-on: ubuntu-latest
+    environment: prod  
+    needs: Dev       
+    steps:
+      - uses: actions/checkout@v4
 
-      
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.7.5
+
+      - uses: ahmedig/terraform-azurerm-backend@v4
+        with:
+          azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          resource_group_name: backendrg
+          container_name: backendcontainer
+          storage_account_name: backendstorge
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="prod.tfvars"
+
+    
